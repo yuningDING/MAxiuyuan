@@ -1,6 +1,5 @@
 import re
 from pypinyin import pinyin
-import signal
 
 
 class Item:
@@ -28,26 +27,33 @@ class Item:
         print(self.id + ':' + ' '.join(self.gold_pinyin_list))
 
 
+annotation_dictionary = {}
+
+
 def annotate(word):
-    goldPinyin = []
-    for c in word:
-        pinyin_c = pinyin(c, heteronym=True)
-        if len(pinyin_c[0]) ==1:
-            pinyin_c = pinyin_c[0]
-            goldPinyin.append(pinyin_c)
-        else:
-            print(word)
-            print(pinyin_c[0])
-            human_input = input('Please enter the correct pinyin:\n')
-            if int(human_input) <= len(pinyin_c[0]):
-                gold_pinyin_c = pinyin_c[0][int(human_input)-1]
-                print('!' + gold_pinyin_c + '! is chosen as the correct one')
+    if word in annotation_dictionary.keys():
+        return annotation_dictionary.get(word)
+    else:
+        goldPinyin = []
+        for c in word:
+            pinyin_c = pinyin(c, heteronym=True)
+            if len(pinyin_c[0]) ==1:
+                pinyin_c = pinyin_c[0]
+                goldPinyin.append(pinyin_c)
             else:
-                print('Invalid annotation. !'+pinyin_c[0][0]+'! is chosen as the correct one')
-                gold_pinyin_c = pinyin_c[0][0]      
-            pinyin_c = [gold_pinyin_c]
-            goldPinyin.append(pinyin_c)
-    return goldPinyin
+                print(word)
+                print(pinyin_c[0])
+                human_input = input('Please enter the correct pinyin:\n')
+                if int(human_input) <= len(pinyin_c[0]):
+                    gold_pinyin_c = pinyin_c[0][int(human_input)-1]
+                    print('!' + gold_pinyin_c + '! is chosen as the correct one')
+                else:
+                    print('Invalid annotation. !'+pinyin_c[0][0]+'! is chosen as the correct one')
+                    gold_pinyin_c = pinyin_c[0][0]
+                pinyin_c = [gold_pinyin_c]
+                goldPinyin.append(pinyin_c)
+        annotation_dictionary[word]=goldPinyin
+        return goldPinyin
 
 
 def export_result():
