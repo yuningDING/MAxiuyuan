@@ -73,8 +73,9 @@ def read_dictionary(dictionary_path):
             pinyin_array = []
             word = row[0]
             pinyin = row[1]
-            matches = re.findall('\[.*?\]', pinyin, re.DOTALL)
+            matches = re.findall('\[\'.*?\'\]', pinyin, re.DOTALL)
             for m in matches:
+                m = m.strip('\[\'\'\]')
                 pinyin_array.append([m])
             annotation_dictionary[word] = pinyin_array
     return annotation_dictionary
