@@ -1,4 +1,5 @@
 import re
+import csv
 from pypinyin import pinyin
 
 
@@ -27,10 +28,7 @@ class Item:
         print(self.id + ':' + ' '.join(self.gold_pinyin_list))
 
 
-annotation_dictionary = {}
-
-
-def annotate(word):
+def annotate(annotation_dictionary, word):
     if word in annotation_dictionary.keys():
         return annotation_dictionary.get(word)
     else:
@@ -52,21 +50,46 @@ def annotate(word):
                     gold_pinyin_c = pinyin_c[0][0]
                 pinyin_c = [gold_pinyin_c]
                 goldPinyin.append(pinyin_c)
-        annotation_dictionary[word]=goldPinyin
+        annotation_dictionary[word] = goldPinyin
         return goldPinyin
 
 
 def export_result():
+    #TODO: export items into json file
     print('results exported')
 
 
+def write_dictionary(dictionary):
+    with open('annotation_dictionary.csv', 'w') as f:
+        for key in dictionary.keys():
+            f.write("%s\t%s\n" % (key, dictionary[key]))
+
+
+def read_dictionary(dictionary_path):
+    annotation_dictionary = {}
+    with open(dictionary_path, mode='r') as f:
+        csv_reader = csv.reader(f, delimiter='\t')
+        for row in csv_reader:
+            pinyin_array = []
+            word = row[0]
+            pinyin = row[1]
+            matches = re.findall('\[.*?\]', pinyin, re.DOTALL)
+            for m in matches:
+                pinyin_array.append([m])
+            annotation_dictionary[word] = pinyin_array
+    return annotation_dictionary
+
+
 def main():
+    try:
+        annotation_dictionary = read_dictionary('annotation_dictionary.csv')
+    except OSError as e:
+        annotation_dictionary = {}
+
     lines = open('test.txt').readlines()
-    current_line = 0
-    for line in lines[::-1]:
+    for line in lines:
         # skip empty line
         if not line.strip():
-            current_line+=1
             continue
         print('******')
         print(line)
@@ -88,7 +111,7 @@ def main():
                 for m in matches:
                     word = re.sub(m, '', word)
                 pyPinyin = pinyin(word)
-                goldPinyin = annotate(word)
+                goldPinyin = annotate(annotation_dictionary, word)
             else:
                 # find pinyin for normal words
                 pyPinyin = pinyin(word)
@@ -102,7 +125,7 @@ def main():
                 item.pypinyin_list.append(p[0])
             for p in goldPinyin:
                 item.gold_pinyin_list.append(p[0])
-
+    write_dictionary(annotation_dictionary)
 
 if __name__ == "__main__":
     main()
