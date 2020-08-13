@@ -1,6 +1,7 @@
 import re
 import csv
 from pypinyin import pinyin
+import json
 
 
 class Item:
@@ -54,13 +55,20 @@ def annotate(annotation_dictionary, word):
         return goldPinyin
 
 
-def export_result():
-    #TODO: export items into json file
+def list_to_string(list):
+    return '*'.join(list)
+
+
+def export_result(data, outfile):
+    with open(outfile, 'w') as f:
+        for d in data:
+            f.write(d.id+'\t'+list_to_string(d.token_list)+'\t'+list_to_string(d.character_list)+'\t'+list_to_string(d.pos_list)+'\t'+list_to_string(d.pypinyin_list)+'\t'+list_to_string(d.gold_pinyin_list))
     print('results exported')
 
 
+
 def write_dictionary(dictionary):
-    with open('annotation_dictionary.csv', 'w') as f:
+    with open('annotation_dictionary_X.csv', 'w') as f:
         for key in dictionary.keys():
             f.write("%s\t%s\n" % (key, dictionary[key]))
 
@@ -82,8 +90,9 @@ def read_dictionary(dictionary_path):
 
 
 def main():
+    data = []
     try:
-        annotation_dictionary = read_dictionary('annotation_dictionary.csv')
+        annotation_dictionary = read_dictionary('annotation_dictionary_X.csv')
     except OSError as e:
         annotation_dictionary = {}
 
@@ -126,7 +135,9 @@ def main():
                 item.pypinyin_list.append(p[0])
             for p in goldPinyin:
                 item.gold_pinyin_list.append(p[0])
+        data.append(item)
     write_dictionary(annotation_dictionary)
+    export_result(data, 'out_test.tsv')
 
 if __name__ == "__main__":
     main()
