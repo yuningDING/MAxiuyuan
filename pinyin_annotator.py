@@ -30,6 +30,8 @@ class Item:
 
 
 def annotate(annotation_dictionary, word):
+    if word.startswith('['):
+        word = word[1:]
     if word in annotation_dictionary.keys():
         return annotation_dictionary.get(word)
     else:
@@ -43,12 +45,12 @@ def annotate(annotation_dictionary, word):
                 print(word)
                 print(pinyin_c[0])
                 human_input = input('Please enter the correct pinyin:\n')
-                if int(human_input) <= len(pinyin_c[0]):
+                if human_input.isdigit() and int(human_input) <= len(pinyin_c[0]):
                     gold_pinyin_c = pinyin_c[0][int(human_input)-1]
                     print('!' + gold_pinyin_c + '! is chosen as the correct one')
                 else:
-                    print('Invalid annotation. !'+pinyin_c[0][0]+'! is chosen as the correct one')
-                    gold_pinyin_c = pinyin_c[0][0]
+                    print('Invalid annotation. NaN is annotated')
+                    gold_pinyin_c = 'NaN'
                 pinyin_c = [gold_pinyin_c]
                 goldPinyin.append(pinyin_c)
         annotation_dictionary[word] = goldPinyin
@@ -68,7 +70,7 @@ def export_result(data, outfile):
 
 
 def write_dictionary(dictionary):
-    with open('annotation_dictionary_X.csv', 'w') as f:
+    with open('annotation_dictionary.csv', 'w', encoding='utf-8') as f:
         for key in dictionary.keys():
             f.write("%s\t%s\n" % (key, dictionary[key]))
 
@@ -92,11 +94,11 @@ def read_dictionary(dictionary_path):
 def main():
     data = []
     try:
-        annotation_dictionary = read_dictionary('annotation_dictionary_X.csv')
+        annotation_dictionary = read_dictionary('annotation_dictionary.csv')
     except OSError as e:
         annotation_dictionary = {}
 
-    lines = open('test.txt').readlines()
+    lines = open('19980128.txt', encoding='utf-8').readlines()
     for line in lines:
         # skip empty line
         if not line.strip():
@@ -137,7 +139,7 @@ def main():
                 item.gold_pinyin_list.append(p[0])
         data.append(item)
     write_dictionary(annotation_dictionary)
-    export_result(data, 'out_test.tsv')
+    export_result(data, 'out_19980128_yd.tsv')
 
 if __name__ == "__main__":
     main()
